@@ -8,7 +8,7 @@ using FridgeWatch.Domain.Common;
 
 namespace FridgeWatch.Application.Services;
 
-public class HouseholdService : IHouseholdService
+public class HouseholdService : ServiceBase, IHouseholdService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
@@ -38,11 +38,9 @@ public class HouseholdService : IHouseholdService
 
     public async Task<HouseholdDto> GetByIdAsync(int id)
     {
-        var household = await _unitOfWork.Households.GetByIdAsync(id);
-        if (household == null)
-        {
-            throw new BusinessException("家庭不存在");
-        }
+        var household = await GetOrThrowAsync(
+            () => _unitOfWork.Households.GetByIdAsync(id),
+            "家庭不存在");
 
         return _mapper.Map<HouseholdDto>(household);
     }
@@ -83,11 +81,9 @@ public class HouseholdService : IHouseholdService
 
     public async Task<HouseholdDto> UpdateAsync(int id, HouseholdUpdateDto dto, int userId)
     {
-        var household = await _unitOfWork.Households.GetByIdAsync(id);
-        if (household == null)
-        {
-            throw new BusinessException("家庭不存在");
-        }
+        var household = await GetOrThrowAsync(
+            () => _unitOfWork.Households.GetByIdAsync(id),
+            "家庭不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdOwnerAsync(id, userId))
         {
@@ -103,11 +99,9 @@ public class HouseholdService : IHouseholdService
 
     public async Task DeleteAsync(int id, int userId)
     {
-        var household = await _unitOfWork.Households.GetByIdAsync(id);
-        if (household == null)
-        {
-            throw new BusinessException("家庭不存在");
-        }
+        var household = await GetOrThrowAsync(
+            () => _unitOfWork.Households.GetByIdAsync(id),
+            "家庭不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdOwnerAsync(id, userId))
         {
@@ -120,11 +114,9 @@ public class HouseholdService : IHouseholdService
 
     public async Task<HouseholdDto> ResetInviteCodeAsync(int householdId, ResetInviteCodeDto dto, int userId)
     {
-        var household = await _unitOfWork.Households.GetByIdAsync(householdId);
-        if (household == null)
-        {
-            throw new BusinessException("家庭不存在");
-        }
+        var household = await GetOrThrowAsync(
+            () => _unitOfWork.Households.GetByIdAsync(householdId),
+            "家庭不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdOwnerAsync(householdId, userId))
         {

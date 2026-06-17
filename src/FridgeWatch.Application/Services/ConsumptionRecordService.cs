@@ -8,7 +8,7 @@ using FridgeWatch.Domain.Common;
 
 namespace FridgeWatch.Application.Services;
 
-public class ConsumptionRecordService : IConsumptionRecordService
+public class ConsumptionRecordService : ServiceBase, IConsumptionRecordService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
@@ -52,22 +52,18 @@ public class ConsumptionRecordService : IConsumptionRecordService
 
     public async Task<ConsumptionRecordDto> GetByIdAsync(int id)
     {
-        var record = await _unitOfWork.ConsumptionRecords.GetByIdAsync(id);
-        if (record == null)
-        {
-            throw new BusinessException("消耗记录不存在");
-        }
+        var record = await GetOrThrowAsync(
+            () => _unitOfWork.ConsumptionRecords.GetByIdAsync(id),
+            "消耗记录不存在");
 
         return _mapper.Map<ConsumptionRecordDto>(record);
     }
 
     public async Task<ConsumptionRecordDto> CreateAsync(ConsumptionRecordCreateDto dto, int userId)
     {
-        var foodItem = await _unitOfWork.FoodItems.GetByIdAsync(dto.FoodItemId);
-        if (foodItem == null)
-        {
-            throw new BusinessException("食材不存在");
-        }
+        var foodItem = await GetOrThrowAsync(
+            () => _unitOfWork.FoodItems.GetByIdAsync(dto.FoodItemId),
+            "食材不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(foodItem.HouseholdId, userId))
         {
@@ -111,11 +107,9 @@ public class ConsumptionRecordService : IConsumptionRecordService
 
     public async Task<ConsumptionRecordDto> UpdateAsync(int id, ConsumptionRecordUpdateDto dto, int userId)
     {
-        var record = await _unitOfWork.ConsumptionRecords.GetByIdAsync(id);
-        if (record == null)
-        {
-            throw new BusinessException("消耗记录不存在");
-        }
+        var record = await GetOrThrowAsync(
+            () => _unitOfWork.ConsumptionRecords.GetByIdAsync(id),
+            "消耗记录不存在");
 
         if (record.UserId != userId)
         {
@@ -131,22 +125,18 @@ public class ConsumptionRecordService : IConsumptionRecordService
 
     public async Task DeleteAsync(int id, int userId)
     {
-        var record = await _unitOfWork.ConsumptionRecords.GetByIdAsync(id);
-        if (record == null)
-        {
-            throw new BusinessException("消耗记录不存在");
-        }
+        var record = await GetOrThrowAsync(
+            () => _unitOfWork.ConsumptionRecords.GetByIdAsync(id),
+            "消耗记录不存在");
 
         if (record.UserId != userId)
         {
             throw new UnauthorizedAccessException("只能删除自己的消耗记录");
         }
 
-        var foodItem = await _unitOfWork.FoodItems.GetByIdAsync(record.FoodItemId);
-        if (foodItem == null)
-        {
-            throw new BusinessException("对应食材不存在");
-        }
+        var foodItem = await GetOrThrowAsync(
+            () => _unitOfWork.FoodItems.GetByIdAsync(record.FoodItemId),
+            "对应食材不存在");
 
         await _unitOfWork.BeginTransactionAsync();
         try
