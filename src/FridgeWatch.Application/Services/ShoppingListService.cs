@@ -35,12 +35,7 @@ public class ShoppingListService : IShoppingListService
 
     public async Task<ShoppingListDto> GetByIdAsync(int id)
     {
-        var shoppingList = await _unitOfWork.ShoppingLists.GetWithItemsByIdAsync(id);
-        if (shoppingList == null)
-        {
-            throw new BusinessException("采购清单不存在");
-        }
-
+        var shoppingList = await _unitOfWork.ShoppingLists.GetWithItemsByIdAsync(id).ThrowIfNullAsync("采购清单不存在");
         return _mapper.Map<ShoppingListDto>(shoppingList);
     }
 
@@ -61,11 +56,7 @@ public class ShoppingListService : IShoppingListService
 
     public async Task<ShoppingListDto> UpdateAsync(int id, ShoppingListUpdateDto dto, int userId)
     {
-        var shoppingList = await _unitOfWork.ShoppingLists.GetWithItemsByIdAsync(id);
-        if (shoppingList == null)
-        {
-            throw new BusinessException("采购清单不存在");
-        }
+        var shoppingList = await _unitOfWork.ShoppingLists.GetWithItemsByIdAsync(id).ThrowIfNullAsync("采购清单不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(shoppingList.HouseholdId, userId))
         {
@@ -103,11 +94,7 @@ public class ShoppingListService : IShoppingListService
 
     public async Task DeleteAsync(int id, int userId)
     {
-        var shoppingList = await _unitOfWork.ShoppingLists.GetByIdAsync(id);
-        if (shoppingList == null)
-        {
-            throw new BusinessException("采购清单不存在");
-        }
+        var shoppingList = await _unitOfWork.ShoppingLists.GetByIdAsync(id).ThrowIfNullAsync("采购清单不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(shoppingList.HouseholdId, userId))
         {
@@ -120,11 +107,7 @@ public class ShoppingListService : IShoppingListService
 
     public async Task<ShoppingListDto> AddItemAsync(int shoppingListId, ShoppingListItemCreateDto dto, int userId)
     {
-        var shoppingList = await _unitOfWork.ShoppingLists.GetWithItemsByIdAsync(shoppingListId);
-        if (shoppingList == null)
-        {
-            throw new BusinessException("采购清单不存在");
-        }
+        var shoppingList = await _unitOfWork.ShoppingLists.GetWithItemsByIdAsync(shoppingListId).ThrowIfNullAsync("采购清单不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(shoppingList.HouseholdId, userId))
         {
@@ -148,17 +131,9 @@ public class ShoppingListService : IShoppingListService
 
     public async Task<ShoppingListDto> UpdateItemAsync(int itemId, ShoppingListItemUpdateDto dto, int userId)
     {
-        var item = await _unitOfWork.ShoppingListItems.GetByIdAsync(itemId);
-        if (item == null)
-        {
-            throw new BusinessException("清单项不存在");
-        }
+        var item = await _unitOfWork.ShoppingListItems.GetByIdAsync(itemId).ThrowIfNullAsync("清单项不存在");
 
-        var shoppingList = await _unitOfWork.ShoppingLists.GetByIdAsync(item.ShoppingListId);
-        if (shoppingList == null)
-        {
-            throw new BusinessException("采购清单不存在");
-        }
+        var shoppingList = await _unitOfWork.ShoppingLists.GetByIdAsync(item.ShoppingListId).ThrowIfNullAsync("采购清单不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(shoppingList.HouseholdId, userId))
         {
@@ -181,17 +156,9 @@ public class ShoppingListService : IShoppingListService
 
     public async Task<ShoppingListDto> RemoveItemAsync(int itemId, int userId)
     {
-        var item = await _unitOfWork.ShoppingListItems.GetByIdAsync(itemId);
-        if (item == null)
-        {
-            throw new BusinessException("清单项不存在");
-        }
+        var item = await _unitOfWork.ShoppingListItems.GetByIdAsync(itemId).ThrowIfNullAsync("清单项不存在");
 
-        var shoppingList = await _unitOfWork.ShoppingLists.GetByIdAsync(item.ShoppingListId);
-        if (shoppingList == null)
-        {
-            throw new BusinessException("采购清单不存在");
-        }
+        var shoppingList = await _unitOfWork.ShoppingLists.GetByIdAsync(item.ShoppingListId).ThrowIfNullAsync("采购清单不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(shoppingList.HouseholdId, userId))
         {
@@ -212,17 +179,9 @@ public class ShoppingListService : IShoppingListService
 
     public async Task<ShoppingListDto> ToggleItemPurchasedAsync(int itemId, bool isPurchased, int userId)
     {
-        var item = await _unitOfWork.ShoppingListItems.GetByIdAsync(itemId);
-        if (item == null)
-        {
-            throw new BusinessException("清单项不存在");
-        }
+        var item = await _unitOfWork.ShoppingListItems.GetByIdAsync(itemId).ThrowIfNullAsync("清单项不存在");
 
-        var shoppingList = await _unitOfWork.ShoppingLists.GetByIdAsync(item.ShoppingListId);
-        if (shoppingList == null)
-        {
-            throw new BusinessException("采购清单不存在");
-        }
+        var shoppingList = await _unitOfWork.ShoppingLists.GetByIdAsync(item.ShoppingListId).ThrowIfNullAsync("采购清单不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(shoppingList.HouseholdId, userId))
         {
@@ -244,11 +203,7 @@ public class ShoppingListService : IShoppingListService
 
     public async Task<List<FoodItemDto>> ConvertToFoodItemsAsync(ShoppingListConvertDto dto, int userId)
     {
-        var shoppingList = await _unitOfWork.ShoppingLists.GetWithItemsByIdAsync(dto.ShoppingListId);
-        if (shoppingList == null)
-        {
-            throw new BusinessException("采购清单不存在");
-        }
+        var shoppingList = await _unitOfWork.ShoppingLists.GetWithItemsByIdAsync(dto.ShoppingListId).ThrowIfNullAsync("采购清单不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(shoppingList.HouseholdId, userId))
         {

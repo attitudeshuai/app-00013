@@ -46,11 +46,7 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto> LoginAsync(UserLoginDto dto)
     {
-        var user = await _unitOfWork.Users.GetByUsernameOrEmailAsync(dto.UsernameOrEmail);
-        if (user == null)
-        {
-            throw new BusinessException("用户名或密码错误");
-        }
+        var user = await _unitOfWork.Users.GetByUsernameOrEmailAsync(dto.UsernameOrEmail).ThrowIfNullAsync("用户名或密码错误");
 
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
         if (result == PasswordVerificationResult.Failed)
@@ -63,22 +59,13 @@ public class AuthService : IAuthService
 
     public async Task<UserDto> GetCurrentUserAsync(int userId)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if (user == null)
-        {
-            throw new BusinessException("用户不存在");
-        }
-
+        var user = await _unitOfWork.Users.GetByIdAsync(userId).ThrowIfNullAsync("用户不存在");
         return _mapper.Map<UserDto>(user);
     }
 
     public async Task<UserDto> UpdateCurrentUserAsync(int userId, UserUpdateDto dto)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if (user == null)
-        {
-            throw new BusinessException("用户不存在");
-        }
+        var user = await _unitOfWork.Users.GetByIdAsync(userId).ThrowIfNullAsync("用户不存在");
 
         if (!string.IsNullOrEmpty(dto.Username) && dto.Username != user.Username)
         {
