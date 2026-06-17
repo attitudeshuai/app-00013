@@ -30,11 +30,7 @@ public class FoodItemService : IFoodItemService
 
     public async Task<FoodItemDto> GetByIdAsync(int id)
     {
-        var foodItem = await _unitOfWork.FoodItems.GetByIdAsync(id);
-        if (foodItem == null)
-        {
-            throw new BusinessException("食材不存在");
-        }
+        var foodItem = (await _unitOfWork.FoodItems.GetByIdAsync(id)).EnsureExists("食材不存在");
 
         return _mapper.Map<FoodItemDto>(foodItem);
     }
@@ -59,11 +55,7 @@ public class FoodItemService : IFoodItemService
 
     public async Task<FoodItemDto> UpdateAsync(int id, FoodItemUpdateDto dto, int userId)
     {
-        var foodItem = await _unitOfWork.FoodItems.GetByIdAsync(id);
-        if (foodItem == null)
-        {
-            throw new BusinessException("食材不存在");
-        }
+        var foodItem = (await _unitOfWork.FoodItems.GetByIdAsync(id)).EnsureExists("食材不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(foodItem.HouseholdId, userId))
         {
@@ -87,11 +79,7 @@ public class FoodItemService : IFoodItemService
 
     public async Task DeleteAsync(int id, int userId)
     {
-        var foodItem = await _unitOfWork.FoodItems.GetByIdAsync(id);
-        if (foodItem == null)
-        {
-            throw new BusinessException("食材不存在");
-        }
+        var foodItem = (await _unitOfWork.FoodItems.GetByIdAsync(id)).EnsureExists("食材不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(foodItem.HouseholdId, userId))
         {
@@ -104,11 +92,7 @@ public class FoodItemService : IFoodItemService
 
     public async Task<FoodItemDto> UpdateStatusAsync(int id, FoodStatus status, int userId)
     {
-        var foodItem = await _unitOfWork.FoodItems.GetByIdAsync(id);
-        if (foodItem == null)
-        {
-            throw new BusinessException("食材不存在");
-        }
+        var foodItem = (await _unitOfWork.FoodItems.GetByIdAsync(id)).EnsureExists("食材不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(foodItem.HouseholdId, userId))
         {

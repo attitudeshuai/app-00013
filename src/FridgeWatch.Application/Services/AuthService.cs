@@ -63,22 +63,14 @@ public class AuthService : IAuthService
 
     public async Task<UserDto> GetCurrentUserAsync(int userId)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if (user == null)
-        {
-            throw new BusinessException("用户不存在");
-        }
+        var user = (await _unitOfWork.Users.GetByIdAsync(userId)).EnsureExists("用户不存在");
 
         return _mapper.Map<UserDto>(user);
     }
 
     public async Task<UserDto> UpdateCurrentUserAsync(int userId, UserUpdateDto dto)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if (user == null)
-        {
-            throw new BusinessException("用户不存在");
-        }
+        var user = (await _unitOfWork.Users.GetByIdAsync(userId)).EnsureExists("用户不存在");
 
         if (!string.IsNullOrEmpty(dto.Username) && dto.Username != user.Username)
         {
