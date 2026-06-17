@@ -1,4 +1,5 @@
 using AutoMapper;
+using FridgeWatch.Application.Common;
 using FridgeWatch.Application.DTOs;
 using FridgeWatch.Application.Interfaces;
 using FridgeWatch.Domain.Common;
@@ -42,12 +43,8 @@ public class RecipeService : IRecipeService
 
     public async Task<RecipeDto> GetByIdAsync(int id)
     {
-        var recipe = await _unitOfWork.Recipes.GetWithIngredientsAsync(id);
-        if (recipe == null)
-        {
-            throw new BusinessException("食谱不存在");
-        }
-
+        var recipe = (await _unitOfWork.Recipes.GetWithIngredientsAsync(id))
+            .ThrowIfNull("食谱不存在");
         return _mapper.Map<RecipeDto>(recipe);
     }
 
@@ -65,11 +62,8 @@ public class RecipeService : IRecipeService
 
     public async Task<RecipeDto> UpdateAsync(int id, RecipeUpdateDto dto)
     {
-        var recipe = await _unitOfWork.Recipes.GetWithIngredientsAsync(id);
-        if (recipe == null)
-        {
-            throw new BusinessException("食谱不存在");
-        }
+        var recipe = (await _unitOfWork.Recipes.GetWithIngredientsAsync(id))
+            .ThrowIfNull("食谱不存在");
 
         _mapper.Map(dto, recipe);
 
@@ -93,11 +87,7 @@ public class RecipeService : IRecipeService
 
     public async Task DeleteAsync(int id)
     {
-        var recipe = await _unitOfWork.Recipes.GetByIdAsync(id);
-        if (recipe == null)
-        {
-            throw new BusinessException("食谱不存在");
-        }
+        await _unitOfWork.Recipes.GetByIdOrThrowAsync(id, "食谱不存在");
 
         await _unitOfWork.Recipes.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();

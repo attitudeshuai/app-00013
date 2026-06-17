@@ -1,4 +1,5 @@
 using AutoMapper;
+using FridgeWatch.Application.Common;
 using FridgeWatch.Application.DTOs;
 using FridgeWatch.Application.Interfaces;
 using FridgeWatch.Domain.Entities;
@@ -45,22 +46,14 @@ public class HouseholdMemberService : IHouseholdMemberService
 
     public async Task<HouseholdMemberDto> GetByIdAsync(int id)
     {
-        var member = await _unitOfWork.HouseholdMembers.GetByIdAsync(id);
-        if (member == null)
-        {
-            throw new BusinessException("成员不存在");
-        }
-
+        var member = await _unitOfWork.HouseholdMembers.GetByIdOrThrowAsync(id, "成员不存在");
         return _mapper.Map<HouseholdMemberDto>(member);
     }
 
     public async Task<HouseholdMemberDto> JoinHouseholdAsync(string inviteCode, int userId)
     {
-        var household = await _unitOfWork.Households.GetByInviteCodeAsync(inviteCode);
-        if (household == null)
-        {
-            throw new BusinessException("邀请码无效");
-        }
+        var household = (await _unitOfWork.Households.GetByInviteCodeAsync(inviteCode))
+            .ThrowIfNull("邀请码无效");
 
         if (household.InviteCodeExpiresAt.HasValue && household.InviteCodeExpiresAt.Value < DateTime.UtcNow)
         {
@@ -89,11 +82,7 @@ public class HouseholdMemberService : IHouseholdMemberService
 
     public async Task<HouseholdMemberDto> UpdateAsync(int id, HouseholdMemberUpdateDto dto, int userId)
     {
-        var member = await _unitOfWork.HouseholdMembers.GetByIdAsync(id);
-        if (member == null)
-        {
-            throw new BusinessException("成员不存在");
-        }
+        var member = await _unitOfWork.HouseholdMembers.GetByIdOrThrowAsync(id, "成员不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdOwnerAsync(member.HouseholdId, userId))
         {
@@ -109,11 +98,7 @@ public class HouseholdMemberService : IHouseholdMemberService
 
     public async Task DeleteAsync(int id, int userId)
     {
-        var member = await _unitOfWork.HouseholdMembers.GetByIdAsync(id);
-        if (member == null)
-        {
-            throw new BusinessException("成员不存在");
-        }
+        var member = await _unitOfWork.HouseholdMembers.GetByIdOrThrowAsync(id, "成员不存在");
 
         if (member.UserId == userId)
         {
