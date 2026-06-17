@@ -1,4 +1,5 @@
 using AutoMapper;
+using FridgeWatch.Application.Common;
 using FridgeWatch.Application.DTOs;
 using FridgeWatch.Application.Interfaces;
 using FridgeWatch.Domain.Entities;
@@ -44,22 +45,13 @@ public class ExpiryAlertService : IExpiryAlertService
 
     public async Task<ExpiryAlertDto> GetByIdAsync(int id)
     {
-        var alert = await _unitOfWork.ExpiryAlerts.GetByIdAsync(id);
-        if (alert == null)
-        {
-            throw new BusinessException("提醒不存在");
-        }
-
+        var alert = await _unitOfWork.ExpiryAlerts.GetByIdOrThrowAsync(id, "提醒不存在");
         return _mapper.Map<ExpiryAlertDto>(alert);
     }
 
     public async Task<ExpiryAlertDto> CreateAsync(ExpiryAlertCreateDto dto, int userId)
     {
-        var foodItem = await _unitOfWork.FoodItems.GetByIdAsync(dto.FoodItemId);
-        if (foodItem == null)
-        {
-            throw new BusinessException("食材不存在");
-        }
+        var foodItem = await _unitOfWork.FoodItems.GetByIdOrThrowAsync(dto.FoodItemId, "食材不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdMemberAsync(foodItem.HouseholdId, userId))
         {
@@ -77,11 +69,7 @@ public class ExpiryAlertService : IExpiryAlertService
 
     public async Task<ExpiryAlertDto> UpdateAsync(int id, ExpiryAlertUpdateDto dto, int userId)
     {
-        var alert = await _unitOfWork.ExpiryAlerts.GetByIdAsync(id);
-        if (alert == null)
-        {
-            throw new BusinessException("提醒不存在");
-        }
+        var alert = await _unitOfWork.ExpiryAlerts.GetByIdOrThrowAsync(id, "提醒不存在");
 
         if (alert.UserId != userId)
         {
@@ -97,11 +85,7 @@ public class ExpiryAlertService : IExpiryAlertService
 
     public async Task DeleteAsync(int id, int userId)
     {
-        var alert = await _unitOfWork.ExpiryAlerts.GetByIdAsync(id);
-        if (alert == null)
-        {
-            throw new BusinessException("提醒不存在");
-        }
+        var alert = await _unitOfWork.ExpiryAlerts.GetByIdOrThrowAsync(id, "提醒不存在");
 
         if (alert.UserId != userId)
         {
@@ -119,11 +103,7 @@ public class ExpiryAlertService : IExpiryAlertService
 
     public async Task MarkAsReadAsync(int id, int userId)
     {
-        var alert = await _unitOfWork.ExpiryAlerts.GetByIdAsync(id);
-        if (alert == null)
-        {
-            throw new BusinessException("提醒不存在");
-        }
+        var alert = await _unitOfWork.ExpiryAlerts.GetByIdOrThrowAsync(id, "提醒不存在");
 
         if (alert.UserId != userId)
         {
