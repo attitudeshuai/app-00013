@@ -7,7 +7,7 @@ using FridgeWatch.Domain.Common;
 
 namespace FridgeWatch.Application.Services;
 
-public class ShareService : IShareService
+public class ShareService : ServiceBase, IShareService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
@@ -30,11 +30,9 @@ public class ShareService : IShareService
             throw new BusinessException("有效天数必须大于0");
         }
 
-        var household = await _unitOfWork.Households.GetByIdAsync(dto.HouseholdId);
-        if (household == null)
-        {
-            throw new BusinessException("家庭不存在");
-        }
+        var household = await GetOrThrowAsync(
+            () => _unitOfWork.Households.GetByIdAsync(dto.HouseholdId),
+            "家庭不存在");
 
         var shareLink = new ShareLink
         {
@@ -89,11 +87,9 @@ public class ShareService : IShareService
 
     public async Task<ShareLinkDto> RevokeShareLinkAsync(int shareLinkId, int userId)
     {
-        var shareLink = await _unitOfWork.ShareLinks.GetByIdAsync(shareLinkId);
-        if (shareLink == null)
-        {
-            throw new BusinessException("分享链接不存在");
-        }
+        var shareLink = await GetOrThrowAsync(
+            () => _unitOfWork.ShareLinks.GetByIdAsync(shareLinkId),
+            "分享链接不存在");
 
         var isOwner = await _unitOfWork.HouseholdMembers.IsHouseholdOwnerAsync(shareLink.HouseholdId, userId);
         if (!isOwner && shareLink.CreatedBy != userId)
@@ -117,11 +113,9 @@ public class ShareService : IShareService
 
     public async Task<SharedFoodItemsDto> GetSharedFoodItemsAsync(string token)
     {
-        var shareLink = await _unitOfWork.ShareLinks.GetByTokenAsync(token);
-        if (shareLink == null)
-        {
-            throw new BusinessException("分享链接不存在或已被撤销");
-        }
+        var shareLink = await GetOrThrowAsync(
+            () => _unitOfWork.ShareLinks.GetByTokenAsync(token),
+            "分享链接不存在或已被撤销");
 
         if (shareLink.ExpiresAt < DateTime.UtcNow)
         {

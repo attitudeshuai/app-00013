@@ -8,7 +8,7 @@ using FridgeWatch.Domain.Common;
 
 namespace FridgeWatch.Application.Services;
 
-public class HouseholdMemberService : IHouseholdMemberService
+public class HouseholdMemberService : ServiceBase, IHouseholdMemberService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
@@ -45,22 +45,18 @@ public class HouseholdMemberService : IHouseholdMemberService
 
     public async Task<HouseholdMemberDto> GetByIdAsync(int id)
     {
-        var member = await _unitOfWork.HouseholdMembers.GetByIdAsync(id);
-        if (member == null)
-        {
-            throw new BusinessException("成员不存在");
-        }
+        var member = await GetOrThrowAsync(
+            () => _unitOfWork.HouseholdMembers.GetByIdAsync(id),
+            "成员不存在");
 
         return _mapper.Map<HouseholdMemberDto>(member);
     }
 
     public async Task<HouseholdMemberDto> JoinHouseholdAsync(string inviteCode, int userId)
     {
-        var household = await _unitOfWork.Households.GetByInviteCodeAsync(inviteCode);
-        if (household == null)
-        {
-            throw new BusinessException("邀请码无效");
-        }
+        var household = await GetOrThrowAsync(
+            () => _unitOfWork.Households.GetByInviteCodeAsync(inviteCode),
+            "邀请码无效");
 
         if (household.InviteCodeExpiresAt.HasValue && household.InviteCodeExpiresAt.Value < DateTime.UtcNow)
         {
@@ -89,11 +85,9 @@ public class HouseholdMemberService : IHouseholdMemberService
 
     public async Task<HouseholdMemberDto> UpdateAsync(int id, HouseholdMemberUpdateDto dto, int userId)
     {
-        var member = await _unitOfWork.HouseholdMembers.GetByIdAsync(id);
-        if (member == null)
-        {
-            throw new BusinessException("成员不存在");
-        }
+        var member = await GetOrThrowAsync(
+            () => _unitOfWork.HouseholdMembers.GetByIdAsync(id),
+            "成员不存在");
 
         if (!await _unitOfWork.HouseholdMembers.IsHouseholdOwnerAsync(member.HouseholdId, userId))
         {
@@ -109,11 +103,9 @@ public class HouseholdMemberService : IHouseholdMemberService
 
     public async Task DeleteAsync(int id, int userId)
     {
-        var member = await _unitOfWork.HouseholdMembers.GetByIdAsync(id);
-        if (member == null)
-        {
-            throw new BusinessException("成员不存在");
-        }
+        var member = await GetOrThrowAsync(
+            () => _unitOfWork.HouseholdMembers.GetByIdAsync(id),
+            "成员不存在");
 
         if (member.UserId == userId)
         {
